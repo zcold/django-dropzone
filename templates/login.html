@@ -1,0 +1,42 @@
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Login to File Uploader</title>
+    <link rel="stylesheet"
+      href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+    <link rel="stylesheet"
+      href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap-theme.min.css">
+    <style type="text/css">
+      body {
+        background: Gainsboro
+      }
+      .container{
+        height: 100%;
+        display: table;
+        vertical-align: middle;
+      }
+      .vertical-center-row{
+        display: table-cell;
+        vertical-align: middle;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="user_login_area" align="center" class="container"
+      style="position:fixed;width:100%">
+      <div class="row vertical-center-row">
+        <div class="col-lg-12">
+          <div class="row "><h1> Log in to upload files. </h1></div>
+          <div class="row ">
+            <form id="user_login" method="post" action="/authorize/">
+              {% csrf_token %}
+              User name: <input type="text" name="username">
+              User password: <input type="password" name="password">
+              <input type="submit" value="Login" />
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

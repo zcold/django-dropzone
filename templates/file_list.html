@@ -1,0 +1,32 @@
+{% if files %} <table class="table table-striped">
+  <thead>
+    <tr>
+      <th><button type="button" class="btn btn-link col-xs-1">
+        #</button></th>
+      <th><button type="button" class="btn btn-link col-xs-3" onclick="sort_name()">
+        File Name</button></th>
+      <th><button type="button" class="btn btn-link col-xs-3" onclick="sort_time()">
+        Modified Time</button></th>
+      <th><button type="button" class="btn btn-link col-xs-3" onclick="sort_uploader()">
+        Uploader</button></th>
+      <th><button type="button" class="btn btn-link col-xs-2">
+        Action</button></th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for file in files %}
+    <tr>
+      <td>{{ file.index }} </td>
+      <td><a href="{{ file.download_url }}" id="file_name_field" >{{ file.name }}</td>
+      <td>{{ file.date }}</td>
+      <td>{{ file.uploader }}</td>
+      <td><span class="glyphicon glyphicon-remove"
+        onclick="remove_file(this)"
+        onmouseover="mouse_over_span(this)"
+        onmouseout="mouse_out_span(this)"
+        aria-hidden="true"></span></td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endif %}

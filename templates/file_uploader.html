@@ -1,0 +1,192 @@
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>File Uploader</title>
+    <link rel="stylesheet"
+      href="/assets/dropzone.css">
+    <link rel="stylesheet"
+      href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+    <link rel="stylesheet"
+      href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap-theme.min.css">
+    <style type="text/css">
+      body {
+        background: Gainsboro
+      }
+      .container{
+        height: 100%;
+        display: table;
+        vertical-align: middle;
+      }
+      .vertical-center-row{
+        display: table-cell;
+        vertical-align: middle;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="file_uploader_area" style="position:fixed;width:100%" class="row">
+      <div class= "col-md-6">
+        <form id="file_dropzone" class="dropzone" mathod="post" enctype="multipart/form-data">
+          {% csrf_token %}
+        </form>
+        <div id="actions" class="row">
+          <div class="col-lg-7">
+            <span class="btn btn-success fileinput-button">
+              <i class="glyphicon glyphicon-plus"></i>
+              <span>Add files...</span>
+            </span>
+            <button type="submit" class="btn btn-primary start">
+            <i class="glyphicon glyphicon-upload"></i>
+            <span>Start upload</span>
+            </button>
+            <button type="reset" class="btn btn-warning cancel">
+            <i class="glyphicon glyphicon-ban-circle"></i>
+            <span>Cancel upload</span>
+            </button>
+          </div>
+          <div class="col-lg-5">
+            <!-- The global file processing state -->
+            <span class="fileupload-process">
+              <div id="total-progress" class="progress progress-striped active" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                <div class="progress-bar progress-bar-success" style="width:0%;" data-dz-uploadprogress></div>
+              </div>
+            </span>
+          </div>
+        </div>
+        <!-- HTML heavily inspired by http://blueimp.github.io/jQuery-File-Upload/ -->
+        <div class="table table-striped" class="files" id="previews">
+          <div id="template" class="file-row">
+            <!-- This is used as the file preview template -->
+            <div>
+              <span class="preview"><img data-dz-thumbnail /></span>
+            </div>
+            <div>
+              <p class="name" data-dz-name></p>
+              <strong class="error text-danger" data-dz-errormessage></strong>
+            </div>
+            <div>
+              <p class="size" data-dz-size></p>
+              <div class="progress progress-striped active" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                <div class="progress-bar progress-bar-success" style="width:0%;" data-dz-uploadprogress></div>
+              </div>
+            </div>
+            <div>
+              <button class="btn btn-primary start">
+              <i class="glyphicon glyphicon-upload"></i>
+              <span>Start</span>
+              </button>
+              <button data-dz-remove class="btn btn-warning cancel">
+              <i class="glyphicon glyphicon-ban-circle"></i>
+              <span>Cancel</span>
+              </button>
+              <button data-dz-remove class="btn btn-danger delete">
+              <i class="glyphicon glyphicon-trash"></i>
+              <span>Delete</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="file_list" class = "col-md-6">
+      </div>
+    </div>
+    <script src="/assets/dropzone.js"></script>
+    <script>
+      function httpGet(theUrl) {
+        var xmlHttp = new XMLHttpRequest();
+        xmlHttp.open( "GET", theUrl, false );
+        xmlHttp.send( null );
+        return xmlHttp.responseText;
+      }
+
+      function remove_file(rm) {
+        rm.className = "";
+        rm.innerHTML = "...";
+        filename = rm.parentElement.parentElement.cells[1].children[0].innerHTML
+        uploader = rm.parentElement.parentElement.cells[3].innerHTML
+        var fullname = uploader + '/' + filename
+        document.getElementById('file_list').innerHTML = httpGet("/remove_file/" + fullname);
+      }
+
+      function mouse_over_span(rm) {
+        rm.style.color = 'red'
+      }
+
+      function mouse_out_span(rm) {
+        rm.style.color = 'black'
+      }
+
+      function authorize() {
+        document.getElementById('user_login').submit();
+      }
+
+      function sort_time() {
+        document.getElementById('file_list').innerHTML = httpGet("list/time/");
+      }
+      function sort_name() {
+        document.getElementById('file_list').innerHTML = httpGet("list/name/");
+      }
+      function sort_uploader() {
+        document.getElementById('file_list').innerHTML = httpGet("list/uploader/");
+      }
+
+      document.getElementById('file_list').innerHTML = httpGet("list/time/");
+
+      var previewNode = document.querySelector("#template");
+      previewNode.id = "";
+
+      var previewTemplate = previewNode.parentNode.innerHTML;
+      previewNode.parentNode.removeChild(previewNode);
+      var myDropzone = new Dropzone(document.getElementById('file_dropzone'), {
+        url: "/file_upload/",
+        filesizeBase: 1024,
+        thumbnailWidth: 80,
+        thumbnailHeight: 80,
+        parallelUploads: 20,
+        previewTemplate: previewTemplate,
+        autoQueue: false, // Make sure the files aren't queued until manually added
+        previewsContainer: "#previews", // Define the container to display the previews
+        clickable: ".fileinput-button" // Define the element that should be used as click trigger to select files.
+        });
+
+      myDropzone.on("addedfile", function(file) {
+        file.previewElement.querySelector(".start").onclick = function() {
+          myDropzone.enqueueFile(file); };
+        file.previewElement.querySelector(".delete").onclick = function() {
+          filename = file.name
+          document.getElementById('file_list').innerHTML = httpGet("/remove_file_without_uploader/" + filename);
+          myDropzone.removeFile(file); };
+
+      });
+
+      myDropzone.on("totaluploadprogress", function(progress) {
+        document.querySelector("#total-progress .progress-bar").style.width = progress + "%";
+      });
+
+      myDropzone.on("sending", function(file) {
+        document.querySelector("#total-progress").style.opacity = "1";
+        file.previewElement.querySelector(".start").setAttribute("disabled", "disabled");
+      });
+
+      myDropzone.on("complete", function(file) {
+        document.getElementById('file_list').innerHTML = httpGet("list/")
+        file.previewElement.querySelector(".start").className = "btn btn-success start"
+        file.previewElement.querySelector(".start").innerHTML = "Done"
+        file.previewElement.querySelector(".cancel").setAttribute("disabled", "disabled");
+        // file.previewElement.querySelector(".delete").setAttribute("disabled", "disabled");
+      });
+
+      myDropzone.on("queuecomplete", function(progress) {
+        document.querySelector("#total-progress").style.opacity = "0";
+      });
+
+      document.querySelector("#actions .start").onclick = function() {
+        myDropzone.enqueueFiles(myDropzone.getFilesWithStatus(Dropzone.ADDED));
+      };
+
+      document.querySelector("#actions .cancel").onclick = function() {
+        myDropzone.removeAllFiles(true);
+      };
+    </script>
+  </body>
+</html>
